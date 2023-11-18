@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "Page Reader",
+    "description": "Read page out loud",
+    "version": "1.0",
+    "action": {
+        "default_popup": "popup/popup.html"
+    },
+    "content_scripts": [
+        {
+            "js": [
+                "scripts/readpage.js"
+            ],
+            "matches": [
+                "*://*/*"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div>
+  <p>
+    Harry Potter is a series of seven fantasy novels written by British author J. K. Rowling. The novels chronicle the lives of a young wizard, Harry Potter, and his friends Hermione Granger and Ron Weasley, all of whom are students at Hogwarts School of Witchcraft and Wizardry. The main story arc concerns Harry's conflict with Lord Voldemort, a dark wizard who intends to become immortal, overthrow the wizard governing body known as the Ministry of Magic and subjugate all wizards and Muggles (non-magical people).
+    The series was originally published in English by Bloomsbury in the United Kingdom and Scholastic Press in the United States. A series of many genres, including fantasy, drama, coming-of-age fiction, and the British school story (which includes elements of mystery, thriller, adventure, horror, and romance), the world of Harry Potter explores numerous themes and includes many cultural meanings and references.[1] According to Rowling, the main theme is death.[2] Other major themes in the series include prejudice, corruption, and madness.
+  </p>
+  <p>
+    The series was originally published in English by Bloomsbury in the United Kingdom and Scholastic Press in the United States. A series of many genres, including fantasy, drama, coming-of-age fiction, and the British school story (which includes elements of mystery, thriller, adventure, horror, and romance), the world of Harry Potter explores numerous themes and includes many cultural meanings and references.[1] According to Rowling, the main theme is death.[2] Other major themes in the series include prejudice, corruption, and madness.[3]
+  </p>
+</div>
+
+<script>
+
+  var synthesis = window.speechSynthesis;
+  var buffer = [];
+  var goOn = true;
+  var paragraphs = document.querySelectorAll('p');
+  var currentRange;
+  var wholeSentense = false;
+    
+    // 遍历每个 <p> 标签
+    for (var i = 0; i < paragraphs.length; i++) {
+      // 添加点击事件监听器
+      paragraphs[i].addEventListener('click', function(event) {
+        clickPara(event);
+      });
+    }
+
+    document.addEventListener('keydown', function(event) {
+    if (event.keyCode === 37) {
+        // 左方向键被按下
+        autoPrev(currentRange);
+        console.log('左方向键被按下');
+    } else if (event.keyCode === 38) {
+        // 上方向键被按下
+        console.log('上方向键被按下');
+    } else if (event.keyCode === 39) {
+        // 右方向键被按下
+        autoNext(currentRange);
+        console.log('右方向键被按下');
+    } else if (event.keyCode === 40) {
+        // 下方向键被按下
+        console.log('下方向键被按下');
+    }
+});
+
+
+  function clickPara(event) {
+    const element = event.target;
+    const offX = event.clientX;
+    const offY = event.clientY;
+
+    var range = document.caretRangeFromPoint(offX, offY);
+
+    beginFrom(range);
+  }
+
+  function beginFrom(range) {
+    currentRange = range;
+    const text = search(range);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    readOutloud(text);
+  }
+
+  function autoNext(range) {
+    console.log("autoNext");
+    const element = range.endContainer;
+    var endOff = range.endOffset;
+    try {
+      do {
+        range.setStart(element, endOff);
+        range.setEnd(element, endOff + 1);
+        endOff += 1;
+      } while (!meetAlpha(range)); 
+      if (range.toString() != "") {
+        beginFrom(range);
+        return;
+      }
+    } catch (e) {
+      console.log("out of range")
+    }
+    var nextElement = element.parentElement.nextElementSibling;
+    console.log(nextElement);
+    if (nextElement) {
+      nextElement = nextElement.childNodes[0];
+      var nextRange = document.createRange();
+      nextRange.setStart(nextElement, 0);
+      nextRange.setEnd(nextElement, 1);
+      if (nextRange.toString() !== "") {
+        beginFrom(nextRange);
+      }
+    }
+  }
+
+  function autoPrev(range) {
+    console.log("autoPrev");
+    const element = range.endContainer;
+    var startOff = range.startOffset;
+    try {
+      do {
+        range.setStart(element, startOff - 1);
+        range.setEnd(element, startOff);
+        startOff -= 1;
+      } while (!meetSepPoint(range));
+      range.setStart(range.startOffset + 1);
+      beginFrom(range);
+    } catch (e) {
+      console.log("out of range");
+    }
+    startFromSibling(range, true);
+  }
+
+  function startFromSibling(range) {
+    const element = range.endContainer;
+    var nextElement = null;
+    nextElement = element.parentElement.previousElementSibling;
+    if (nextElement) {
+      nextElement = nextElement.childNodes[0];
+      var nextRange = document.createRange();
+      nextRange.setStart(nextElement, 0);
+      nextRange.setEnd(nextElement, 1);
+      if (nextRange.toString() !== "") {
+        beginFrom(nextRange);
+      }
+    }
+  }
+
+  function readOutloud(text) {
+    console.log("read:", text)
+    synthesis.cancel();
+    var utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-GB';
+    utterance.onend = function() {
+      console.log("read finished");
+      autoNext(currentRange);
+    }
+    synthesis.speak(utterance);
+  }
+
+  function searchNext(range) {
+      const element = range.endContainer;
+      var nextRange = document.createRange();
+      nextRange.setStart(element, range.endOffset + 1);
+      nextRange.setEnd(element, range.endOffset + 1);
+      i = 10;
+      while (--i > 0) {
+        console.log("find: ", i, ", ", nextRange.toString());
+        if (meetAlpha(nextRange)) {
+          console.log("meet alpha...")
+          return nextRange;
+        }
+        nextRange.setStart(element, nextRange.endOffset + 1);
+        nextRange.setEnd(element, nextRange.endOffset + 1);
+      }
+      return nextRange;
+  }
+
+  function search(range) {
+    const element = range.endContainer;
+    var i = range.startOffset;
+    var j = range.endOffset;
+    var rangeI = document.createRange();
+    var rangeJ = document.createRange();
+    // 
+    while (!meetSepPoint(rangeI) && i > 0) {
+      rangeI.setStart(element, i - 1);
+      rangeI.setEnd(element, i);
+      i--;
+    }
+    if (meetSepPoint(rangeI)) {
+      ++i;
+    }
+    while(!meetSepPoint(rangeJ) && j < element.length) {
+      rangeJ.setStart(element, j);
+      rangeJ.setEnd(element, j + 1);
+      j++;
+    }
+    if (meetSepPoint(rangeJ)) {
+      --j;
+    }
+    range.setStart(element, i);
+    range.setEnd(element, j);
+    return range.toString();
+  }
+
+  function meetSepPoint(range) {
+    return isSepPoint(range.toString());
+  }
+
+  function meetSpace(range) {
+    return range.toString() == " ";
+  }
+
+  function meetAlpha(range) {
+    var reg = /^[a-zA-Z].*/;
+    var result = reg.test(range.toString());
+    console.log("meetAlpha: " + range.toString(), result);
+    return result;
+  }
+
+  function meetStart(range) {
+    if (meetSepPoint(range)) {
+
+    }
+  }
+
+  function isSepPoint(c, whole) {
+    if (wholeSentense || whole) {
+      const seps = new Set(".?!;");
+      return seps.has(c);
+    }
+    const seps = new Set(".,()".split(""));
+    return seps.has(c);
+  }
+</script>
+
+</body>
+</html>

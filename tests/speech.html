@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTS Demo</title>
+</head>
+<body>
+  <h1>TTS Demo</h1>
+  <textarea id="textToSpeech" placeholder="在这里输入要朗读的文本"></textarea>
+  <button onclick="speakText()">朗读</button>
+
+  <script>
+    function speakText() {
+      var text = "cking person who always think too much.";
+      const texts = text.split(";");
+      console.log(texts);
+      var synthesis = window.speechSynthesis;
+      var utterance = new SpeechSynthesisUtterance();
+      utterance.lang = 'en-BG';
+      texts.forEach(word => {
+        utterance.text = word;
+        synthesis.speak(utterance);
+      })
+    }
+  </script>
+</body>
+</html>
